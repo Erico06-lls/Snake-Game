@@ -4,9 +4,9 @@ class Snake:
     def __init__(self):
         self.size = 20
         self.body = [
-            (100, 100),
-            (80, 100),
-            (60, 100)
+            (200, 200),
+            (180, 200),
+            (160, 200)
         ]
 
         self.dx = 1

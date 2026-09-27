@@ -1,7 +1,7 @@
 import random
 import pygame
 
-from setting import WIDTH, HEIGHT
+from setting import WIDTH, HEIGHT, HEADER_HEIGHT
 
 
 class Food:
@@ -12,7 +12,7 @@ class Food:
     def random_position(self, occupied_positions):
         while True:
             x = random.randrange(0, WIDTH, self.size)
-            y = random.randrange(0, HEIGHT, self.size)
+            y = random.randrange(HEADER_HEIGHT, HEIGHT, self.size)
 
             position = (x, y)
 

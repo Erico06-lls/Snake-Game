@@ -1,8 +1,6 @@
 import pygame
 
-import math
-
-from setting import WIDTH, HEIGHT, SPEED, FPS, DIFFICULTIES
+from setting import WIDTH, HEIGHT, SPEED, FPS, DIFFICULTIES, HEADER_HEIGHT
 
 from snake import Snake
 from food import Food
@@ -34,12 +32,7 @@ class Game:
         self.difficulties = list(DIFFICULTIES.keys())
         self.selected_difficulty = 0
 
-        self.menu_snake_x = 100
-        self.menu_snake_y = 100
-        self.menu_snake_speed = 100
-        self.menu_snake2_x = 700
-        self.menu_snake2_y = 500
-        self.menu_snake2_speed = -70
+        self.selected_menu = 0
 
         self.menu_bg = pygame.image.load("assets/background.jpeg").convert()
         self.menu_bg = pygame.transform.scale(self.menu_bg, (WIDTH, HEIGHT))
@@ -53,6 +46,10 @@ class Game:
         self.difficulty_image = pygame.transform.scale(self.difficulty_image, (320, 100))
         self.retour_image = pygame.image.load("assets/retour.png").convert_alpha()
         self.retour_image = pygame.transform.scale(self.retour_image, (320, 100))
+        self.score_image = pygame.image.load("assets/pomme.png").convert_alpha()
+        self.score_image = pygame.transform.scale(self.score_image, (30, 30))
+        self.record_image = pygame.image.load("assets/record.png").convert_alpha()
+        self.record_image = pygame.transform.scale(self.record_image, (30, 30))
 
         self.start_rect = pygame.Rect(0, 0, 320, 100)
         self.difficulty_rect = pygame.Rect(0, 0, 320, 100)
@@ -86,7 +83,6 @@ class Game:
             center=(WIDTH // 2, 150)
         )
 
-        # Icone Trophy
         trophy_rect = self.trophy_image.get_rect(
             midright=(high_score_rect.left - 10, high_score_rect.centery)
         )
@@ -98,14 +94,26 @@ class Game:
 
         self.screen.blit(high_score_text, high_score_rect)
 
-        # Bouton Start
         self.start_rect = self.start_image.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 50))
-
         self.screen.blit(self.start_image, self.start_rect)
 
         self.difficulty_rect = self.difficulty_image.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 50))
-
         self.screen.blit(self.difficulty_image, self.difficulty_rect)
+
+        if self.selected_menu == 0:
+            selected_rect = self.start_rect
+        else:
+            selected_rect = self.difficulty_rect
+
+        pygame.draw.polygon(
+            self.screen,
+            "yellow",
+            [
+                (selected_rect.left - 30, selected_rect.centery - 10),
+                (selected_rect.left - 30, selected_rect.centery + 10),
+                (selected_rect.left - 15, selected_rect.centery)
+            ]
+        )
 
         difficulty = self.difficulties[self.selected_difficulty]
 
@@ -125,13 +133,31 @@ class Game:
         )
 
     def draw_score(self):
-        text = self.font.render(
-            f"Score : {self.score}",
+        center_y = HEADER_HEIGHT // 2
+
+        score_icon_rect = self.score_image.get_rect(center=(35, center_y))
+        self.screen.blit(self.score_image, score_icon_rect)
+
+        score_text = self.font.render(
+            str(self.score),
             True,
             "white"
         )
 
-        self.screen.blit(text, (10, 10))
+        score_rect = score_text.get_rect(midleft=(score_icon_rect.right + 10, center_y))
+        self.screen.blit(score_text, score_rect)
+
+        trophy_rect = self.record_image.get_rect(center=(score_rect.right + 60, center_y))
+        self.screen.blit(self.record_image, trophy_rect)
+
+        high_score_text = self.font.render(
+            str(self.high_score),
+            True,
+            "yellow"
+        )
+
+        high_score_rect = high_score_text.get_rect(midleft=(trophy_rect.right + 10, center_y))
+        self.screen.blit(high_score_text, high_score_rect)
 
     def draw_difficulty(self):
         self.difficulty_rects = []
@@ -162,7 +188,6 @@ class Game:
 
             self.screen.blit(text, rect)
 
-        # Bouton Retour
         self.back_rect = self.retour_image.get_rect(center=(WIDTH // 2, HEIGHT - 130))
 
         self.screen.blit(self.retour_image, self.back_rect)
@@ -197,6 +222,27 @@ class Game:
 
             self.game_over_timer = 0
 
+    def draw_game(self):
+
+        # Fond général
+        self.screen.fill((90, 130, 40))
+
+        # Header
+        pygame.draw.rect(
+            self.screen,
+            (45, 90, 30),
+            (0, 0, WIDTH, HEADER_HEIGHT)
+        )
+
+        # Serpent
+        self.snake.draw(self.screen)
+
+        # Nourriture
+        self.food.draw(self.screen)
+
+        # Score
+        self.draw_score()
+
     def draw_game_over(self):
 
         # Panneau central
@@ -212,13 +258,7 @@ class Game:
 
         pygame.draw.rect(
             self.screen,
-            "black",
-            panel_rect
-        )
-
-        pygame.draw.rect(
-            self.screen,
-            "red",
+            "grey",
             panel_rect,
             4
         )
@@ -238,7 +278,7 @@ class Game:
 
         self.screen.blit(game_over_text, rect)
 
-        # Petits losanges décoratifs
+        # Petits losanges
         pygame.draw.polygon(
             self.screen,
             "red",
@@ -287,7 +327,6 @@ class Game:
                 center=(WIDTH // 2, HEIGHT // 2 + 40)
             )
 
-            # Icone Trophy
             trophy_rect = self.trophy_image.get_rect(
                 midright=(high_score_rect.left - 10, high_score_rect.centery)
             )
@@ -321,7 +360,7 @@ class Game:
         return (
             x < 0
             or x + size > WIDTH
-            or y < 0
+            or y < HEADER_HEIGHT
             or y + size > HEIGHT
         )
 
@@ -370,8 +409,26 @@ class Game:
                     
                     # MENU
                     if self.state == "menu":
-                        if event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
-                            self.state = "playing"
+
+                        if event.key == pygame.K_UP:
+                            self.selected_menu = max(
+                                0,
+                                self.selected_menu - 1
+                            )
+
+                        elif event.key == pygame.K_DOWN:
+                            self.selected_menu = min(
+                                1,
+                                self.selected_menu + 1
+                            )
+
+                        elif event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
+
+                            if self.selected_menu == 0:
+                                self.state = "playing"
+
+                            elif self.selected_menu == 1:
+                                self.state = "difficulty"
 
                     # DIFFICULTY
                     elif self.state == "difficulty":
@@ -430,18 +487,16 @@ class Game:
                 self.game_over_timer += dt
 
             # 3. Affichage
-            self.screen.fill("purple")
+            self.screen.fill((35, 45, 35))
 
             if self.state == "menu":
                 self.draw_menu()
 
             elif self.state == "playing":
-                self.snake.draw(self.screen)
-                self.food.draw(self.screen)
-                self.draw_score()
+                self.draw_game()
 
             elif self.state == "game_over":
-                    # Le serpent clignote pendant les premières secondes
+                # Le serpent clignote pendant les premières secondes
                 if self.game_over_timer < 0.8:
                     if int(self.game_over_timer * 10) % 2 == 0:
                         self.snake.draw(self.screen)

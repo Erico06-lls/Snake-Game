@@ -1,6 +1,16 @@
-# 🐍 Snake Game — Pygame POO
+# Snake Game
 
 Un jeu **Snake** moderne et interactif développé en **Python avec Pygame**. Ce projet a été réalisé dans le cadre de mon apprentissage de la **Programmation Orientée Objet (POO)**, ce qui m'a permis de structurer le code de manière propre, modulaire et évolutive.
+
+---
+
+## 🖼️ Aperçu du jeu
+
+# 🏠 Page d'accueil
+![alt text](<screenshots/Screenshot From 2026-09-27 21-42-41.png>)
+
+# 🎮 Jeu en cours
+![alt text](<screenshots/Screenshot From 2026-09-27 21-42-59.png>)
 
 ---
 
